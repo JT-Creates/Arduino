@@ -300,11 +300,6 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
     write4bits(value>>4);
     write4bits(value);
   }
-  if (cur_col > 160) {
-    cur_col = 0;
-  } else {
-    cur_col = cur_col + 1;
-  }
 }
 
 void LiquidCrystal4004::pulseEnable(void) {
@@ -313,22 +308,24 @@ void LiquidCrystal4004::pulseEnable(void) {
   } else {
     cur_col = cur_col + 1;
   }
-  if (cur_col < 5) {
-    digitalWrite(_enable_pin1, LOW);
+  digitalWrite(_enable_pin1, LOW);
+  digitalWrite(_enable_pin2, LOW);
+  if (cur_col < 2) {
     delayMicroseconds(1);    
     digitalWrite(_enable_pin1, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
-    digitalWrite(_enable_pin1, LOW);
-    delayMicroseconds(100);   // commands need > 37us to settle
   } else {
-    delayMicroseconds(100);   // commands need > 37us to settle
-    digitalWrite(_enable_pin2, LOW);
+  for (int i = 0; i < 8; i++) {
+    pinMode(_data_pins[i], OUTPUT);
+    digitalWrite(_data_pins[i], _data_pins[i] * (-1) &0x01);
+  }
     delayMicroseconds(1);    
     digitalWrite(_enable_pin2, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
-    digitalWrite(_enable_pin2, LOW);
-    delayMicroseconds(100);   // commands need > 37us to settle
   }
+  digitalWrite(_enable_pin1, LOW);
+  digitalWrite(_enable_pin2, LOW);
+  delayMicroseconds(10);   // commands need > 37us to settle
 }
 
 void LiquidCrystal4004::write4bits(uint8_t value) {
