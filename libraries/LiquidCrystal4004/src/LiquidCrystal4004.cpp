@@ -24,7 +24,7 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-unit8_t cur_col = 0, cur_line = 0;
+int cur_col = 0, cur_line = 0;
 
 LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
