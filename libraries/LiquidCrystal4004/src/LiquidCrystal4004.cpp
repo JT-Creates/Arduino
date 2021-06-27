@@ -24,7 +24,8 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-int cur_col = 0, cur_line = 0;
+int cur_col;
+int cur_line;
 
 LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
@@ -200,7 +201,7 @@ void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row)
     row = _numlines - 1;    // we count rows starting w/0
   }
   
-  cur_col = col + (_row_offsets[row]);
+  cur_col = col;
   cur_line = row;
   command(LCD_SETDDRAMADDR | (col + _row_offsets[row]));
 }
@@ -313,12 +314,12 @@ void LiquidCrystal4004::pulseEnable(void) {
     if (cur_line > 3) {
       cur_line = 0;
     } else {
-      cur_line = cur_line + 1;
+      cur_line++;
     }
   } else {
-    cur_col = cur_col + 1;
+    cur_col++;
   }
-  if (cur_col > 1) {
+  if (cur_col < 1) {
     digitalWrite(_enable_pin2, LOW);
     delayMicroseconds(1);    
     digitalWrite(_enable_pin2, HIGH);
@@ -340,7 +341,6 @@ void LiquidCrystal4004::write4bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-
   pulseEnable();
 }
 
@@ -349,6 +349,5 @@ void LiquidCrystal4004::write8bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-  
   pulseEnable();
 }
