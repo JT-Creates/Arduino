@@ -1,6 +1,6 @@
-#include <LiquidCrystalDualController.h>
+#include <LiquidCrystal4004.h>
 
-const int en1 = 12, en2 = 7; LiquidCrystalDualController lcd(13, en1, en2, 11, 10, 9, 8);
+const int en1 = 12, en2 = 7; LiquidCrystal4004 lcd(13, en1, en2, 11, 10, 9, 8);
 void setup() {
     lcd.begin(40,4);
  // lcd.print("hello, world! ");
