@@ -315,10 +315,6 @@ void LiquidCrystal4004::pulseEnable(void) {
     digitalWrite(_enable_pin1, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
   } else {
-  for (int i = 0; i < 8; i++) {
-    pinMode(_data_pins[i], OUTPUT);
-    digitalWrite(_data_pins[i], _data_pins[i] * (-1) &0x01);
-  }
     delayMicroseconds(1);    
     digitalWrite(_enable_pin2, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
