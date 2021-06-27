@@ -24,8 +24,7 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-int cur_col;
-int cur_line;
+double cur_col = 0;
 
 LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
@@ -89,7 +88,6 @@ void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_
 
 void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   cur_col = 0;
-  cur_line = 0;
   if (lines > 1) {
     _displayfunction |= LCD_2LINE;
   }
@@ -180,15 +178,13 @@ void LiquidCrystal4004::clear()
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
   cur_col = 0;
-  cur_line = 0;
 }
 
 void LiquidCrystal4004::home()
 {
   command(LCD_RETURNHOME);  // set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
-  cur_col = 0;
-  cur_line = 0;
+  //cur_col = 0;
 }
 
 void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row)
@@ -201,8 +197,7 @@ void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row)
     row = _numlines - 1;    // we count rows starting w/0
   }
   
-  cur_col = col;
-  cur_line = row;
+  //cur_col = col * row;
   command(LCD_SETDDRAMADDR | (col + _row_offsets[row]));
 }
 
@@ -299,27 +294,26 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   if (_rw_pin != 255) { 
     digitalWrite(_rw_pin, LOW);
   }
-  
   if (_displayfunction & LCD_8BITMODE) {
     write8bits(value); 
   } else {
     write4bits(value>>4);
     write4bits(value);
   }
+  if (cur_col > 160) {
+    cur_col = 0;
+  } else {
+    cur_col = cur_col + 1;
+  }
 }
 
 void LiquidCrystal4004::pulseEnable(void) {
   if (cur_col > 160) {
     cur_col = 0;
-    if (cur_line > 3) {
-      cur_line = 0;
-    } else {
-      cur_line++;
-    }
   } else {
-    cur_col++;
+    cur_col = cur_col + 1;
   }
-  if (cur_line < 2) {
+  if (cur_col < 5) {
     digitalWrite(_enable_pin1, LOW);
     delayMicroseconds(1);    
     digitalWrite(_enable_pin1, HIGH);
@@ -327,6 +321,7 @@ void LiquidCrystal4004::pulseEnable(void) {
     digitalWrite(_enable_pin1, LOW);
     delayMicroseconds(100);   // commands need > 37us to settle
   } else {
+    delayMicroseconds(100);   // commands need > 37us to settle
     digitalWrite(_enable_pin2, LOW);
     delayMicroseconds(1);    
     digitalWrite(_enable_pin2, HIGH);
