@@ -309,7 +309,7 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 }
 
 void LiquidCrystal4004::pulseEnable(void) {
-  if (cur_col > 39) {
+  if (cur_col > 160) {
     cur_col = 0;
     if (cur_line > 3) {
       cur_line = 0;
@@ -319,19 +319,19 @@ void LiquidCrystal4004::pulseEnable(void) {
   } else {
     cur_col++;
   }
-  if (cur_col < 1) {
-    digitalWrite(_enable_pin2, LOW);
-    delayMicroseconds(1);    
-    digitalWrite(_enable_pin2, HIGH);
-    delayMicroseconds(1);    // enable pulse must be >450ns
-    digitalWrite(_enable_pin2, LOW);
-    delayMicroseconds(100);   // commands need > 37us to settle
-  } else {
+  if (cur_line < 2) {
     digitalWrite(_enable_pin1, LOW);
     delayMicroseconds(1);    
     digitalWrite(_enable_pin1, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
     digitalWrite(_enable_pin1, LOW);
+    delayMicroseconds(100);   // commands need > 37us to settle
+  } else {
+    digitalWrite(_enable_pin2, LOW);
+    delayMicroseconds(1);    
+    digitalWrite(_enable_pin2, HIGH);
+    delayMicroseconds(1);    // enable pulse must be >450ns
+    digitalWrite(_enable_pin2, LOW);
     delayMicroseconds(100);   // commands need > 37us to settle
   }
 }
