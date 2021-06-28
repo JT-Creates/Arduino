@@ -88,13 +88,11 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
   // SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
   // according to datasheet, we need at least 40ms after power rises above 2.7V
-  // before sending commands. Arduino can turn on way before 4.5V so we'll wait 10
-  delayMicroseconds(10000); 
+  // before sending commands. Arduino can turn on way before 4.5V so we'll wait 50
+  delayMicroseconds(50000); 
   // Now we pull both RS and R/W low to begin commands
   digitalWrite(_rs_pin, LOW);
-  delayMicroseconds(1);
   digitalWrite(_enable_pin1, LOW);
-  delayMicroseconds(1);
   digitalWrite(_enable_pin2, LOW);
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
   
@@ -104,60 +102,33 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     // figure 24, pg 46
 
     // we start in 8bit mode, try to set 4 bit mode
-    col_override = 1;
-    write4bits(0x03);
-    delayMicroseconds(4500); // wait min 4.1ms
-    col_override = 2;
     write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
 
     // second try
-    col_override = 1;
-    write4bits(0x03);
-    delayMicroseconds(4500); // wait min 4.1ms
-    col_override = 2;
     write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
     
     // third go!
-    col_override = 1;
     write4bits(0x03);
-    delayMicroseconds(150);
-    col_override = 2;
-    write4bits(0x03); 
     delayMicroseconds(150);
 
     // finally, set to 4-bit interface
-    col_override = 1;
-    write4bits(0x02);
-    col_override = 2;
     write4bits(0x02);
   } else {
     // this is according to the hitachi HD44780 datasheet
     // page 45 figure 23
 
     // Send function set command sequence
-    col_override = 1;
-    command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(4500);  // wait more than 4.1ms
-    col_override = 2;
     command(LCD_FUNCTIONSET | _displayfunction);
     delayMicroseconds(4500);  // wait more than 4.1ms
 
     // second try
-    col_override = 1;
-    command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(150);
-    col_override = 2;
     command(LCD_FUNCTIONSET | _displayfunction);
     delayMicroseconds(150);
 
     // third go
-    col_override = 1;
     command(LCD_FUNCTIONSET | _displayfunction);
-    col_override = 2;
-    command(LCD_FUNCTIONSET | _displayfunction);
-    col_override = 0;
   }
 
   // finally, set # lines, font size, etc.
@@ -174,7 +145,6 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   _displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
   // set the entry mode
   command(LCD_ENTRYMODESET | _displaymode);
-
 }
 
 void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
@@ -303,10 +273,10 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   digitalWrite(_rs_pin, mode);
 
   // if there is a RW pin indicated, set it low to Write
-  col_override = 1;
   if (_rw_pin != 255) { 
     digitalWrite(_rw_pin, LOW);
   }
+  col_override = 1;
   if (_displayfunction & LCD_8BITMODE) {
     write8bits(value); 
   } else {
@@ -314,9 +284,6 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
     write4bits(value);
   }
   col_override = 2;
-  if (_rw_pin != 255) { 
-    digitalWrite(_rw_pin, LOW);
-  }
   if (_displayfunction & LCD_8BITMODE) {
     write8bits(value); 
   } else {
@@ -346,15 +313,17 @@ void LiquidCrystal4004::write4bits(uint8_t value) {
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
   if (col_override == 0) {
-  if (cur_col < 80) {
-    pulseEnable(_enable_pin1);
-  } else {
-    pulseEnable(_enable_pin2);
-  }
+    if (cur_col < 80) {
+      pulseEnable(_enable_pin1);
+    } else {
+      pulseEnable(_enable_pin2);
+    }
   } else if (col_override == 1) {
     pulseEnable(_enable_pin1);
+    cur_col--;
   } else if (col_override == 2) {
     pulseEnable(_enable_pin2);
+    cur_col--;
   }
 }
 
@@ -364,14 +333,16 @@ void LiquidCrystal4004::write8bits(uint8_t value) {
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
   if (col_override == 0) {
-  if (cur_col < 80) {
-    pulseEnable(_enable_pin1);
-  } else {
-    pulseEnable(_enable_pin2);
-  }
+    if (cur_col < 80) {
+      pulseEnable(_enable_pin1);
+    } else {
+      pulseEnable(_enable_pin2);
+    }
   } else if (col_override == 1) {
     pulseEnable(_enable_pin1);
+    cur_col--;
   } else if (col_override == 2) {
     pulseEnable(_enable_pin2);
+    cur_col--;
   }
 }
