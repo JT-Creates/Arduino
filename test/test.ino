@@ -9,16 +9,16 @@ void setup() {
 }
 
 void loop() {
-    // lcd.setCursor(0,2);
+   // lcd.setCursor(0,2);
    //          012345678901234567890
    //          ---------------------
-    delay(50);
+    delay(100);
     lcd.print("Hello, there!       ");
-    delay(1);
+   // delay(1);
     lcd.print("This is a test!     ");
-    delay(1);
+   // delay(1);
     lcd.print("Testing 4004.       ");
-    delay(1);
+   // delay(1);
     lcd.print("Did it work?        ");
    // delay(2000);
 }

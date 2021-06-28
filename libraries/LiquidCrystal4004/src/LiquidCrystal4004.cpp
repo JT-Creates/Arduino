@@ -311,17 +311,17 @@ void LiquidCrystal4004::pulseEnable(void) {
   digitalWrite(_enable_pin1, LOW);
   digitalWrite(_enable_pin2, LOW);
   if (cur_col < 2) {
-    delayMicroseconds(1);    
+    delayMicroseconds(1);    // enable pulse must be >450ns
     digitalWrite(_enable_pin1, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
   } else {
-    delayMicroseconds(1);    
+    delayMicroseconds(1);    // enable pulse must be >450ns
     digitalWrite(_enable_pin2, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
   }
   digitalWrite(_enable_pin1, LOW);
   digitalWrite(_enable_pin2, LOW);
-  delayMicroseconds(10);   // commands need > 37us to settle
+  delayMicroseconds(37);   // commands need > 37us to settle
 }
 
 void LiquidCrystal4004::write4bits(uint8_t value) {
