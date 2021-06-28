@@ -19,6 +19,6 @@ void loop() {
    // delay(1);
     lcd.print("Testing 4004.       ");
    // delay(1);
-    lcd.print("Did it work?       ");
+    lcd.print("Did it work?        ");
    // delay(2000);
 }
