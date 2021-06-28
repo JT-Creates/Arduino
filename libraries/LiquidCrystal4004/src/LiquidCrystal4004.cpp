@@ -303,11 +303,6 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 }
 
 void LiquidCrystal4004::pulseEnable(void) {
-  if (cur_col > 160) {
-    cur_col = 0;
-  } else {
-    cur_col++;
-  }
   digitalWrite(_enable_pin1, LOW);
   digitalWrite(_enable_pin2, LOW);
   if (cur_col < 80) {
@@ -322,6 +317,11 @@ void LiquidCrystal4004::pulseEnable(void) {
   digitalWrite(_enable_pin1, LOW);
   digitalWrite(_enable_pin2, LOW);
   delayMicroseconds(37);   // commands need > 37us to settle
+  if (cur_col > 160) {
+    cur_col = 0;
+  } else {
+    cur_col++;
+  }
 }
 
 void LiquidCrystal4004::write4bits(uint8_t value) {
