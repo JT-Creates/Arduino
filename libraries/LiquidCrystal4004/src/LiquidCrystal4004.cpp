@@ -306,11 +306,11 @@ void LiquidCrystal4004::pulseEnable(void) {
   if (cur_col > 160) {
     cur_col = 0;
   } else {
-    cur_col = cur_col + 1;
+    cur_col++;
   }
   digitalWrite(_enable_pin1, LOW);
   digitalWrite(_enable_pin2, LOW);
-  if (cur_col < 2) {
+  if (cur_col < 80) {
     delayMicroseconds(1);    // enable pulse must be >450ns
     digitalWrite(_enable_pin1, HIGH);
     delayMicroseconds(1);    // enable pulse must be >450ns
