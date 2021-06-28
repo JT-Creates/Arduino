@@ -78,10 +78,10 @@ void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_
 
 void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   cur_col = 0;
-  if (lines > 1) _displayfunction |= LCD_2LINE;
+  if (lines == 2) _displayfunction |= LCD_2LINE;
   _numlines = lines;
 
-  setRowOffsets(0x00, 0x80, 0x00 + cols, 0x80 + cols);  
+  setRowOffsets(0x00, 0x40, 0x00 + cols, 0x40 + cols);  
 
   // for some 1 line displays you can select a 10 pixel high font
   if ((dotsize != LCD_5x8DOTS) && (lines == 1)) _displayfunction |= LCD_5x10DOTS;
@@ -102,18 +102,33 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     // figure 24, pg 46
 
     // we start in 8bit mode, try to set 4 bit mode
+    col_override = 1;
+    write4bits(0x03);
+    delayMicroseconds(4500); // wait min 4.1ms
+    col_override = 2;
     write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
 
     // second try
+    col_override = 1;
+    write4bits(0x03);
+    delayMicroseconds(4500); // wait min 4.1ms
+    col_override = 2;
     write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
     
     // third go!
+    col_override = 1;
+    write4bits(0x03);
+    delayMicroseconds(150);
+    col_override = 2;
     write4bits(0x03);
     delayMicroseconds(150);
 
     // finally, set to 4-bit interface
+    col_override = 1;
+    write4bits(0x02);
+    col_override = 2;
     write4bits(0x02);
   } else {
     // this is according to the hitachi HD44780 datasheet
@@ -258,19 +273,7 @@ void LiquidCrystal4004::createChar(uint8_t location, uint8_t charmap[]) {
 /*********** mid level commands, for sending data/cmds */
 
 inline void LiquidCrystal4004::command(uint8_t value) {
-  send(value, LOW);
-}
-
-inline size_t LiquidCrystal4004::write(uint8_t value) {
-  send(value, HIGH);
-  return 1; // assume sucess
-}
-
-/************ low level data pushing commands **********/
-
-// write either command or data, with automatic 4/8-bit selection
-void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
-  digitalWrite(_rs_pin, mode);
+  digitalWrite(_rs_pin, LOW);
 
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) { 
@@ -291,6 +294,29 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
     write4bits(value);
   }
   col_override = 0;
+}
+
+inline size_t LiquidCrystal4004::write(uint8_t value) {
+  send(value, HIGH);
+  return 1; // assume sucess
+}
+
+/************ low level data pushing commands **********/
+
+// write either command or data, with automatic 4/8-bit selection
+void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
+  digitalWrite(_rs_pin, mode);
+
+  // if there is a RW pin indicated, set it low to Write
+  if (_rw_pin != 255) { 
+    digitalWrite(_rw_pin, LOW);
+  }
+  if (_displayfunction & LCD_8BITMODE) {
+    write8bits(value); 
+  } else {
+    write4bits(value>>4);
+    write4bits(value);
+  }
 }
 
 void LiquidCrystal4004::pulseEnable(uint8_t _e_pin) {
