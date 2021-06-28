@@ -25,6 +25,7 @@
 // LiquidCrystal constructor is called).
 
 double cur_col = 0;
+int col_override = 0;
 
 int digitalReadOutputPin(uint8_t pin) {
   uint8_t bit = digitalPinToBitMask(pin);
@@ -103,33 +104,60 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     // figure 24, pg 46
 
     // we start in 8bit mode, try to set 4 bit mode
+    col_override = 1;
     write4bits(0x03);
+    delayMicroseconds(4500); // wait min 4.1ms
+    col_override = 2;
+    write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
 
     // second try
+    col_override = 1;
     write4bits(0x03);
+    delayMicroseconds(4500); // wait min 4.1ms
+    col_override = 2;
+    write4bits(0x03); 
     delayMicroseconds(4500); // wait min 4.1ms
     
     // third go!
+    col_override = 1;
+    write4bits(0x03);
+    delayMicroseconds(150);
+    col_override = 2;
     write4bits(0x03); 
     delayMicroseconds(150);
 
     // finally, set to 4-bit interface
-    write4bits(0x02); 
+    col_override = 1;
+    write4bits(0x02);
+    col_override = 2;
+    write4bits(0x02);
   } else {
     // this is according to the hitachi HD44780 datasheet
     // page 45 figure 23
 
     // Send function set command sequence
+    col_override = 1;
+    command(LCD_FUNCTIONSET | _displayfunction);
+    delayMicroseconds(4500);  // wait more than 4.1ms
+    col_override = 2;
     command(LCD_FUNCTIONSET | _displayfunction);
     delayMicroseconds(4500);  // wait more than 4.1ms
 
     // second try
+    col_override = 1;
+    command(LCD_FUNCTIONSET | _displayfunction);
+    delayMicroseconds(150);
+    col_override = 2;
     command(LCD_FUNCTIONSET | _displayfunction);
     delayMicroseconds(150);
 
     // third go
+    col_override = 1;
     command(LCD_FUNCTIONSET | _displayfunction);
+    col_override = 2;
+    command(LCD_FUNCTIONSET | _displayfunction);
+    col_override = 0;
   }
 
   // finally, set # lines, font size, etc.
@@ -275,6 +303,7 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   digitalWrite(_rs_pin, mode);
 
   // if there is a RW pin indicated, set it low to Write
+  col_override = 1;
   if (_rw_pin != 255) { 
     digitalWrite(_rw_pin, LOW);
   }
@@ -284,25 +313,26 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
     write4bits(value>>4);
     write4bits(value);
   }
+  col_override = 2;
+  if (_rw_pin != 255) { 
+    digitalWrite(_rw_pin, LOW);
+  }
+  if (_displayfunction & LCD_8BITMODE) {
+    write8bits(value); 
+  } else {
+    write4bits(value>>4);
+    write4bits(value);
+  }
+  col_override = 0;
 }
 
-void LiquidCrystal4004::pulseEnable(void) {
-  digitalWrite(_enable_pin1, LOW);
+void LiquidCrystal4004::pulseEnable(uint8_t _e_pin) {
+  digitalWrite(_e_pin, LOW);
   delayMicroseconds(1);
-  digitalWrite(_enable_pin2, LOW);
-  if (cur_col < 80) {
-    delayMicroseconds(1);    // enable pulse must be >450ns
-    digitalWrite(_enable_pin1, HIGH);
-    delayMicroseconds(1);    // enable pulse must be >450ns
-  } else {
-    delayMicroseconds(1);    // enable pulse must be >450ns
-    digitalWrite(_enable_pin2, HIGH);
-    delayMicroseconds(1);    // enable pulse must be >450ns
-  }
-  digitalWrite(_enable_pin1, LOW);
+  digitalWrite(_e_pin, HIGH);
   delayMicroseconds(1);
-  digitalWrite(_enable_pin2, LOW);
-  delayMicroseconds(37);   // commands need > 37us to settle
+  digitalWrite(_e_pin, LOW);
+  delayMicroseconds(37); // commands need > 37us to settle
   if (cur_col > 160) {
     cur_col = 0;
   } else {
@@ -315,7 +345,17 @@ void LiquidCrystal4004::write4bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-  pulseEnable();
+  if (col_override == 0) {
+  if (cur_col < 80) {
+    pulseEnable(_enable_pin1);
+  } else {
+    pulseEnable(_enable_pin2);
+  }
+  } else if (col_override == 1) {
+    pulseEnable(_enable_pin1);
+  } else if (col_override == 2) {
+    pulseEnable(_enable_pin2);
+  }
 }
 
 void LiquidCrystal4004::write8bits(uint8_t value) {
@@ -323,5 +363,15 @@ void LiquidCrystal4004::write8bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-  pulseEnable();
+  if (col_override == 0) {
+  if (cur_col < 80) {
+    pulseEnable(_enable_pin1);
+  } else {
+    pulseEnable(_enable_pin2);
+  }
+  } else if (col_override == 1) {
+    pulseEnable(_enable_pin1);
+  } else if (col_override == 2) {
+    pulseEnable(_enable_pin2);
+  }
 }
