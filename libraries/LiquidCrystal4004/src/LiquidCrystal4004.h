@@ -44,21 +44,11 @@
 
 class LiquidCrystal4004 : public Print {
 public:
-  LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, 
-		uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-		uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
-  LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-		uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-		uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
-  LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-		uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
-  LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, 
-		uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
-
-  void init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-	    uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-	    uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
-    
+  LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
+  LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
+  LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
+  LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
+  void init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);  
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
   void clear();
   void home();

@@ -1,18 +1,16 @@
 #include <LiquidCrystal4004.h>
 
-const int en1 = 12, en2 = 7;
-LiquidCrystal4004 lcd(13, en1, en2, 11, 10, 9, 8);
+LiquidCrystal4004 lcd(13, 12, 7, 11, 10, 9, 8);
 void setup() {
     lcd.begin(40,4);
-    lcd.print(" ");
     //lcd.print("hello, world! ABCDEFGHIJKLMNOPQRSTUVWXYZ acbdefghijklmnopqrstuvwxyz 1234567890 `~!@#$%^&*()_+[]|}{:'\"\\/.,?>< ");
 }
 
 void loop() {
-   // lcd.setCursor(0,2);
+   // lcd.setCursor(30,3);
    //          012345678901234567890
    //          ---------------------
-    delay(100);
+    delay(90);
     lcd.print("Hello, there!       ");
    // delay(1);
     lcd.print("This is a test!     ");

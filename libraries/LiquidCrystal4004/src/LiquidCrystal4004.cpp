@@ -26,41 +26,34 @@
 
 double cur_col = 0;
 
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-			     uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
-{
+int digitalReadOutputPin(uint8_t pin) {
+  uint8_t bit = digitalPinToBitMask(pin);
+  uint8_t port = digitalPinToPort(pin);
+  if (port == NOT_A_PIN) return LOW;
+  return (*portOutputRegister(port) & bit) ? HIGH : LOW;
+}
+
+LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
   init(0, rs, rw, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, 
-			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-			     uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
-{
+LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
   init(0, rs, 255, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3)
-{
+LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3) {
   init(1, rs, rw, enable1, enable2, d0, d1, d2, d3, 0, 0, 0, 0);
 }
 
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, 
-			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3)
-{
+LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3) {
   init(1, rs, 255, enable1, enable2, d0, d1, d2, d3, 0, 0, 0, 0);
 }
 
-void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, 
-			 uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
-			 uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
-{
+void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2,  uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
   _rs_pin = rs;
   _rw_pin = rw;
   _enable_pin1 = enable1;
   _enable_pin2 = enable2;
-  
   _data_pins[0] = d0;
   _data_pins[1] = d1;
   _data_pins[2] = d2;
@@ -72,45 +65,37 @@ void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_
 
   pinMode(_rs_pin, OUTPUT);
   // we can save 1 pin by not using RW. Indicate by passing 255 instead of pin#
-  if (_rw_pin != 255) { 
-    pinMode(_rw_pin, OUTPUT);
-  }
+  if (_rw_pin != 255) pinMode(_rw_pin, OUTPUT);
   pinMode(_enable_pin1, OUTPUT);
   pinMode(_enable_pin2, OUTPUT);
   
-  if (fourbitmode)
-    _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  else 
-    _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
+  if (fourbitmode) _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
+  else _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
   
   begin(16, 1);  
 }
 
 void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   cur_col = 0;
-  if (lines > 1) {
-    _displayfunction |= LCD_2LINE;
-  }
+  if (lines > 1) _displayfunction |= LCD_2LINE;
   _numlines = lines;
 
-  setRowOffsets(0x00, 0x40, 0x00 + cols, 0x40 + cols);  
+  setRowOffsets(0x00, 0x80, 0x00 + cols, 0x80 + cols);  
 
   // for some 1 line displays you can select a 10 pixel high font
-  if ((dotsize != LCD_5x8DOTS) && (lines == 1)) {
-    _displayfunction |= LCD_5x10DOTS;
-  }
+  if ((dotsize != LCD_5x8DOTS) && (lines == 1)) _displayfunction |= LCD_5x10DOTS;
 
   // SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
   // according to datasheet, we need at least 40ms after power rises above 2.7V
-  // before sending commands. Arduino can turn on way before 4.5V so we'll wait 50
-  delayMicroseconds(50000); 
+  // before sending commands. Arduino can turn on way before 4.5V so we'll wait 10
+  delayMicroseconds(10000); 
   // Now we pull both RS and R/W low to begin commands
   digitalWrite(_rs_pin, LOW);
+  delayMicroseconds(1);
   digitalWrite(_enable_pin1, LOW);
+  delayMicroseconds(1);
   digitalWrite(_enable_pin2, LOW);
-  if (_rw_pin != 255) { 
-    digitalWrite(_rw_pin, LOW);
-  }
+  if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
   
   //put the LCD into 4 bit or 8 bit mode
   if (! (_displayfunction & LCD_8BITMODE)) {
@@ -164,12 +149,11 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
 }
 
-void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3)
-{
-	_row_offsets[0] = row0;
-	_row_offsets[1] = row1;
-	_row_offsets[2] = row2;
-	_row_offsets[3] = row3;
+void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
+  _row_offsets[0] = row0;
+  _row_offsets[1] = row1;
+  _row_offsets[2] = row2;
+  _row_offsets[3] = row3;
 }
 
 /********** high level commands, for the user! */
@@ -177,7 +161,7 @@ void LiquidCrystal4004::clear()
 {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
-  cur_col = 0;
+  //cur_col = 0;
 }
 
 void LiquidCrystal4004::home()
@@ -304,6 +288,7 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 
 void LiquidCrystal4004::pulseEnable(void) {
   digitalWrite(_enable_pin1, LOW);
+  delayMicroseconds(1);
   digitalWrite(_enable_pin2, LOW);
   if (cur_col < 80) {
     delayMicroseconds(1);    // enable pulse must be >450ns
@@ -315,6 +300,7 @@ void LiquidCrystal4004::pulseEnable(void) {
     delayMicroseconds(1);    // enable pulse must be >450ns
   }
   digitalWrite(_enable_pin1, LOW);
+  delayMicroseconds(1);
   digitalWrite(_enable_pin2, LOW);
   delayMicroseconds(37);   // commands need > 37us to settle
   if (cur_col > 160) {
