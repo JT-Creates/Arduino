@@ -4,7 +4,7 @@ LiquidCrystal4004 lcd(13, 12, 7, 11, 10, 9, 8);
 void setup() {
     lcd.begin(40,4);
     lcd.print("  ");
-    lcd.print("hello, world! ABCDEFGHIJKLMNOPQRSTUVWXYZ acbdefghijklmnopqrstuvwxyz 1234567890 `~!@#$%^&*()_+[]|}{:'\"\\/.,?>< ");
+   // lcd.print("hello, world! ABCDEFGHIJKLMNOPQRSTUVWXYZ acbdefghijklmnopqrstuvwxyz 1234567890 `~!@#$%^&*()_+[]|}{:'\"\\/.,?>< ");
 }
 
 void loop() {
