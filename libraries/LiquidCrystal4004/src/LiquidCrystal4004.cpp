@@ -166,13 +166,13 @@ void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
 /********** high level commands, for the user! */
 void LiquidCrystal4004::clear() {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-  delay(2);
+  //delay(2);
   cur_col = 0;
 }
 
 void LiquidCrystal4004::home() {
   command(LCD_RETURNHOME);  // set cursor position to zero
-  delay(2);
+  //delay(2);
   //cur_col = 0;
 }
 
@@ -193,12 +193,6 @@ void LiquidCrystal4004::display() {
   _displaycontrol |= LCD_DISPLAYON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-//void LiquidCrystal4004::display(int status) {
- // if (status == 1) _displaycontrol |= LCD_DISPLAYON;
- // else _displaycontrol &= ~LCD_DISPLAYON;
- // command(LCD_DISPLAYCONTROL | _displaycontrol);
-//}
-
 // Turns the underline cursor on/off
 void LiquidCrystal4004::noCursor() {
   _displaycontrol &= ~LCD_CURSORON;
@@ -208,12 +202,6 @@ void LiquidCrystal4004::cursor() {
   _displaycontrol |= LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-//void LiquidCrystal4004::cursor(int status) {
- // if (status == 1) _displaycontrol |= LCD_CURSORON;
- // else _displaycontrol &= ~LCD_CURSORON;
- // command(LCD_DISPLAYCONTROL | _displaycontrol);
-//}
-
 // Turn on and off the blinking cursor
 void LiquidCrystal4004::noBlink() {
   _displaycontrol &= ~LCD_BLINKON;
@@ -223,11 +211,7 @@ void LiquidCrystal4004::blink() {
   _displaycontrol |= LCD_BLINKON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-//void LiquidCrystal4004::blink(int status) {
- // if (status == 1) _displaycontrol |= LCD_BLINKON;
- // else _displaycontrol &= ~LCD_BLINKON;
- // command(LCD_DISPLAYCONTROL | _displaycontrol);
-//}
+
 
 // These commands scroll the display without changing the RAM
 void LiquidCrystal4004::scrollDisplayLeft(void) {
@@ -292,8 +276,8 @@ inline size_t LiquidCrystal4004::write(uint8_t value) {
 
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
-  //cur_col++;
-  if (cur_col++ > 160) cur_col = 1;
+  cur_col++;
+  if (cur_col > 160) cur_col = 1;
   digitalWrite(_rs_pin, mode);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
