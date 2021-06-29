@@ -98,11 +98,8 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     }
 
     // finally, set to 4-bit interface
-    for (int j = 0; j < 2; j++) {
-      col_override++;
-      write4bits(0x02);
-    }
-    col_override = 0;
+    col_override = 2;
+    for (int j = 0; j < col_override; col_override--) write4bits(0x02);
   } else {
     // Send function set command sequence three times.
     for (int i = 0; i < 3; i++) {
@@ -145,7 +142,7 @@ void LiquidCrystal4004::clear() {
 void LiquidCrystal4004::home() {
   command(LCD_RETURNHOME);  // set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
-  //cur_col = 0;
+ // cur_col = 0;
 }
 
 void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row) {
@@ -232,12 +229,11 @@ inline void LiquidCrystal4004::command(uint8_t value) {
   digitalWrite(_rs_pin, LOW);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
-  for (int i = 0; i < 3; i++){
-    col_override++;
+  col_override = 2;
+  for (int j = 0; j < col_override; col_override--) {
     if (!(_displayfunction & LCD_8BITMODE)) write4bits(value>>4);
     write4bits(value);
   }
-  col_override = 0;
 }
 inline size_t LiquidCrystal4004::write(uint8_t value) {
   send(value, HIGH);
@@ -253,17 +249,18 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   digitalWrite(_rs_pin, mode);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
-  if (!(_displayfunction & LCD_8BITMODE))  write4bits(value>>4);
+  if (!(_displayfunction & LCD_8BITMODE)) write4bits(value>>4);
   write4bits(value);
 }
-
-void LiquidCrystal4004::pulseEnable(uint8_t _e_pin) {
+//uint8_t _e_pin
+void LiquidCrystal4004::pulseEnable() {
+  if ((cur_col <= 80 & col_override == 0) | col_override == 1) _e_pin = _enable_pin1;
+  else if ((cur_col > 80 & col_override == 0) | col_override == 2) _e_pin = _enable_pin2;
   digitalWrite(_e_pin, LOW);
   delayMicroseconds(3);
   digitalWrite(_e_pin, HIGH);
   delayMicroseconds(3);
   digitalWrite(_e_pin, LOW);
-  delayMicroseconds(3); // commands need > 37us to settle
 }
 
 void LiquidCrystal4004::write4bits(uint8_t value) {
@@ -271,8 +268,7 @@ void LiquidCrystal4004::write4bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-  if ((cur_col <= 80 & col_override == 0) | col_override == 1) pulseEnable(_enable_pin1);
-  else if ((cur_col > 80 & col_override == 0) | col_override == 2) pulseEnable(_enable_pin2);
+  pulseEnable();
 }
 
 void LiquidCrystal4004::write8bits(uint8_t value) {
@@ -280,6 +276,5 @@ void LiquidCrystal4004::write8bits(uint8_t value) {
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }
-  if ((cur_col <= 80 & col_override == 0) | col_override == 1) pulseEnable(_enable_pin1);
-  else if ((cur_col > 80 & col_override == 0) | col_override == 2) pulseEnable(_enable_pin2);
+  pulseEnable();
 }
