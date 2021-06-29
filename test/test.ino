@@ -2,9 +2,10 @@
 
 LiquidCrystal4004 lcd(13, 12, 7, 11, 10, 9, 8);
 void setup() {
-  lcd.begin(40,4);
- //          0123456789012345678901234567890123456789
- //          ----------------------------------------
+  lcd.begin(40, 4);
+  delay(200);
+  //          0123456789012345678901234567890123456789
+  //          ----------------------------------------
   lcd.print("Hello, there!                           ");
   lcd.print("This is a test!                         ");
   lcd.print("                                        ");
@@ -15,16 +16,16 @@ void setup() {
   lcd.print("Testing row 3.      Did row 3 work?     ");
   lcd.print("Testing row 4.      Did row 4 work?     ");
   delay(2000);
- // lcd.print("  ");
- // lcd.print("hello, world! ABCDEFGHIJKLMNOPQRSTUVWXYZ acbdefghijklmnopqrstuvwxyz 1234567890 `~!@#$%^&*()_+[]|}{:'\"\\/.,?>< ");
+  // lcd.print("  ");
+  // lcd.print("hello, world! ABCDEFGHIJKLMNOPQRSTUVWXYZ acbdefghijklmnopqrstuvwxyz 1234567890 `~!@#$%^&*()_+[]|}{:'\"\\/.,?>< ");
 }
 
 void loop() {
- //          0123456789012345678901234567890123456789
- //          ----------------------------------------
- // delay(200);
- // lcd.print(" ");
- // lcd.setCursor(30,3);
+  //          0123456789012345678901234567890123456789
+  //          ----------------------------------------
+  // delay(200);
+  // lcd.print(" ");
+  // lcd.setCursor(30,3);
   lcd.print("-");
   delay(500);
 }
