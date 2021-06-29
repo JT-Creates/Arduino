@@ -58,6 +58,9 @@ public:
   void blink();
   void noCursor();
   void cursor();
+ // void display(int status);
+ // void blink(int status);
+ // void cursor(int status);
   void scrollDisplayLeft();
   void scrollDisplayRight();
   void leftToRight();
