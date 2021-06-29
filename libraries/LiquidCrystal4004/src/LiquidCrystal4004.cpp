@@ -252,10 +252,9 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   if (!(_displayfunction & LCD_8BITMODE)) write4bits(value>>4);
   write4bits(value);
 }
-//uint8_t _e_pin
+
 void LiquidCrystal4004::pulseEnable() {
-  if ((cur_col <= 80 & col_override == 0) | col_override == 1) _e_pin = _enable_pin1;
-  else if ((cur_col > 80 & col_override == 0) | col_override == 2) _e_pin = _enable_pin2;
+  _e_pin = ((cur_col <= 80 & col_override == 0) | col_override == 1) ? _enable_pin1 : _enable_pin2;
   digitalWrite(_e_pin, LOW);
   delayMicroseconds(3);
   digitalWrite(_e_pin, HIGH);

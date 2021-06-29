@@ -27,5 +27,5 @@ void loop() {
   // lcd.print(" ");
   // lcd.setCursor(30,3);
   lcd.print("-");
-  delay(500);
+  delay(50);
 }

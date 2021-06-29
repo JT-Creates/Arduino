@@ -73,9 +73,9 @@ public:
   using Print::write;
 private:
   void send(uint8_t, uint8_t);
+  void writeBits(uint8_t);
   void write4bits(uint8_t);
   void write8bits(uint8_t);
-  //void pulseEnable(uint8_t _e_pin);
   void pulseEnable();
   uint8_t _e_pin;
   uint8_t _rs_pin; // LOW: command.  HIGH: character.
