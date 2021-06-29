@@ -93,13 +93,13 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     // we start in 8bit mode, try to set 4 bit mode three times.
     for (int i = 0; i < 3; i++) {
       col_override = 2;
-      for (int j = 0; j < col_override; col_override--) write4bits(0x03);
+      for (int j = 0; j < col_override; col_override--) writeBits(0x03);
       delayMicroseconds(4103); // wait min 4.1ms
     }
 
     // finally, set to 4-bit interface
     col_override = 2;
-    for (int j = 0; j < col_override; col_override--) write4bits(0x02);
+    for (int j = 0; j < col_override; col_override--) writeBits(0x02);
   } else {
     // Send function set command sequence three times.
     for (int i = 0; i < 3; i++) {
@@ -231,8 +231,8 @@ inline void LiquidCrystal4004::command(uint8_t value) {
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
   col_override = 2;
   for (int j = 0; j < col_override; col_override--) {
-    if (!(_displayfunction & LCD_8BITMODE)) write4bits(value>>4);
-    write4bits(value);
+    if (!(_displayfunction & LCD_8BITMODE)) writeBits(value>>4);
+    writeBits(value);
   }
 }
 inline size_t LiquidCrystal4004::write(uint8_t value) {
@@ -249,8 +249,8 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   digitalWrite(_rs_pin, mode);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
-  if (!(_displayfunction & LCD_8BITMODE)) write4bits(value>>4);
-  write4bits(value);
+  if (!(_displayfunction & LCD_8BITMODE)) writeBits(value>>4);
+  writeBits(value);
 }
 
 void LiquidCrystal4004::pulseEnable() {
@@ -262,16 +262,9 @@ void LiquidCrystal4004::pulseEnable() {
   digitalWrite(_e_pin, LOW);
 }
 
-void LiquidCrystal4004::write4bits(uint8_t value) {
-  for (int i = 0; i < 4; i++) {
-    pinMode(_data_pins[i], OUTPUT);
-    digitalWrite(_data_pins[i], (value >> i) & 0x01);
-  }
-  pulseEnable();
-}
-
-void LiquidCrystal4004::write8bits(uint8_t value) {
+void LiquidCrystal4004::writeBits(uint8_t value) {
   for (int i = 0; i < 8; i++) {
+    if (_data_pins[i] == 0) continue;
     pinMode(_data_pins[i], OUTPUT);
     digitalWrite(_data_pins[i], (value >> i) & 0x01);
   }

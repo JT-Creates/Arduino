@@ -3,6 +3,8 @@
 LiquidCrystal4004 lcd(13, 12, 7, 11, 10, 9, 8);
 void setup() {
   lcd.begin(40, 4);
+  lcd.cursor();
+  lcd.blink();
   delay(200);
   //          0123456789012345678901234567890123456789
   //          ----------------------------------------
@@ -27,5 +29,5 @@ void loop() {
   // lcd.print(" ");
   // lcd.setCursor(30,3);
   lcd.print("-");
-  delay(50);
+  delay(500);
 }
