@@ -172,6 +172,9 @@ void LiquidCrystal4004::cursor() {
   _displaycontrol |= LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
+//uint8_t[2] LiquidCrystal4004::cursor_pos() {
+//  return new uint8_t[2]{1,1};
+//}
 
 // Turn on and off the blinking cursor
 void LiquidCrystal4004::noBlink() {
