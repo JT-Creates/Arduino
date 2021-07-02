@@ -21,6 +21,7 @@
 //
 // Note, however, that resetting the Arduino doesn't reset the LCD, so we can't assume that
 // its in that state when a sketch starts (and the LiquidCrystal constructor is called).
+// we can save 1 pin by not using RW. Indicated by passing 255 instead of pin#
 
 bool cursor_state = false, blink_state = false;
 int cur_col = 0, col_override = 0, control_chips, switch_point, max_cells;
@@ -33,19 +34,13 @@ int digitalReadOutputPin(uint8_t pin) {
 }
 
 LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
-  init(0, rs, rw, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
+  init(rs, rw, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
-  init(0, rs, 255, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
-}
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3) {
-  init(1, rs, rw, enable1, enable2, d0, d1, d2, d3, 0, 0, 0, 0);
-}
-LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3) {
-  init(1, rs, 255, enable1, enable2, d0, d1, d2, d3, 0, 0, 0, 0);
+  init(rs, 255, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2,  uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
+void LiquidCrystal4004::init(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2,  uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
   _rs_pin = rs;
   _rw_pin = rw;
   _enable_pin1 = enable1;
@@ -60,13 +55,10 @@ void LiquidCrystal4004::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_
   _data_pins[7] = d7;
 
   pinMode(_rs_pin, OUTPUT);
-  // we can save 1 pin by not using RW. Indicate by passing 255 instead of pin#
   if (_rw_pin != 255) pinMode(_rw_pin, OUTPUT);
   pinMode(_enable_pin1, OUTPUT);
   pinMode(_enable_pin2, OUTPUT);
-  if (fourbitmode) _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  else _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  begin(40, 4);  
+  _displayfunction = ((d4 == 0 & d5 == 0 & d6 == 0 & d7 == 0) ? LCD_4BITMODE : LCD_8BITMODE) | LCD_1LINE | LCD_5x8DOTS;
 }
 
 void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips, uint8_t dotsize) {
@@ -90,7 +82,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
   // Now we pull both RS and R/W low to begin commands
   digitalWrite(_rs_pin, LOW);
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
-  
+
   // This is according to the brute forcing of a Seyko Display.
   // Put the LCD into 4 bit or 8 bit mode.
   if (!(_displayfunction & LCD_8BITMODE)) {
@@ -138,13 +130,13 @@ void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
 /********** high level commands, for the user! */
 void LiquidCrystal4004::clear() {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-  delayMicroseconds(1000);  // this command takes a long time!
+  delayMicroseconds(2000);  // this command takes a long time!
   cur_col = 0;
 }
 
 void LiquidCrystal4004::home() {
   command(LCD_RETURNHOME);  // set cursor position to zero
-  delayMicroseconds(1000);  // this command takes a long time!
+  delayMicroseconds(2000);  // this command takes a long time!
   cur_col = 0;
 }
 
@@ -154,6 +146,10 @@ void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row) {
   if (row >= _numlines) row = _numlines - 1;    // we count rows starting w/0
   cur_col = col + row * _cols;
   command(LCD_SETDDRAMADDR | (col + _row_offsets[row]));
+}
+
+uint8_t LiquidCrystal4004::cursorPos() {
+  return cur_col;
 }
 
 // Turn the display on/off (quickly)
@@ -171,9 +167,6 @@ void LiquidCrystal4004::noCursor() {
 void LiquidCrystal4004::cursor() {
   command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_CURSORON);
 }
-//uint8_t[2] LiquidCrystal4004::cursor_pos() {
-//  return new uint8_t[2]{1,1};
-//}
 
 // Turn on and off the blinking cursor
 void LiquidCrystal4004::noBlink() {
@@ -221,26 +214,19 @@ void LiquidCrystal4004::createChar(uint8_t location, uint8_t charmap[]) {
 /*********** mid level commands, for sending data/cmds */
 
 inline void LiquidCrystal4004::command(uint8_t value) {
-  digitalWrite(_rs_pin, LOW);
-  // if there is a RW pin indicated, set it low to Write
-  if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
-  for (col_override = 2; 0 < col_override; col_override--) {
-    if (!(_displayfunction & LCD_8BITMODE)) writeBits(value>>4);
-    writeBits(value);
-  }
+  for (col_override = 2; 0 < col_override; col_override--) send(value, LOW);
 }
 inline size_t LiquidCrystal4004::write(uint8_t value) {
   send(value, HIGH);
-  return 1; // assume sucess
 }
 
 /************ low level data pushing commands **********/
 
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
-  cur_col++;
-  if (cur_col > max_cells) cur_col = 1;
+  if (col_override == 0) cur_col++;
   digitalWrite(_rs_pin, mode);
+
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
   if (!(_displayfunction & LCD_8BITMODE)) writeBits(value>>4);
@@ -248,6 +234,8 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 }
 
 void LiquidCrystal4004::pulseEnable() {
+  if (cur_col > max_cells) cur_col = 0;
+  if (cur_col < 0) cur_col = max_cells;
   _e_pin = ((cur_col <= switch_point & col_override == 0) | col_override == 1) ? _enable_pin1 : _enable_pin2;
   digitalWrite(_e_pin, LOW);
   delayMicroseconds(3);
