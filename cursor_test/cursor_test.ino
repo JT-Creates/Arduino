@@ -7,8 +7,8 @@ int JoyStick_Z = 3; //key
 int z = 0, xi = 0, yi = 0, xf = 0, yf = 0, x, y, cx = 0, cy = 0;
 void setup(){
   pinMode(JoyStick_Z, INPUT); 
-  cx = analogRead(sqrt(JoyStick_X));
-  cy = analogRead(sqrt(JoyStick_Y));
+  cx = analogRead((JoyStick_X));
+  cy = analogRead((JoyStick_Y));
   Serial.begin(9600); // 9600 bps
   lcd.begin(40, 4);
   lcd.cursor();
@@ -28,60 +28,57 @@ void loop() {
    // lcd.print(char(z));
    // delay(50);
   }
-  xf = sqrt(analogRead(JoyStick_X)) - cx;
-  yf = sqrt(analogRead(JoyStick_Y)) - cy; 
+  xf = (analogRead(JoyStick_X)) - cx;
+  yf = (analogRead(JoyStick_Y)) - cy; 
   x = xf - xi;
   y = yf - yi;
   xi = xf;
   yi = yf;
-  if (abs(x) > v2) v2 = x;
-  if (abs(y) > v3) v3 = y;
-  while (abs(x) > 2 | abs(y) > 2) {
-    delay(400);
-    //break;
-    xf = sqrt(analogRead(JoyStick_X)) - cx;
-    yf = sqrt(analogRead(JoyStick_Y)) - cy; 
-    x = xf - xi;
-    y = yf - yi;
-    if (abs(x) > v2) v2 = x;
-    if (abs(y) > v3) v3 = y;
-    Serial.println(x+y);
-    xi = xf;
-    yi = yf;
-    //Serial.print(x ,DEC);
-    //Serial.print(",");
-    //Serial.println(y ,DEC);
-    //Serial.print(",");
-    //Serial.println(z ,DEC);
-    if (abs(x) < 2 | abs(y) < 2) break;
-  }
-  cx = analogRead(sqrt(JoyStick_X));
-  cy = analogRead(sqrt(JoyStick_Y));
-  z = digitalRead(JoyStick_Z);
-  if (z != 0) {
- //   Serial.print(lcd.cursor_pos());
-  }
-  v1 += v2;
-  if ((v1 != lcd.cursorPos()-1) & (v1 != lcd.cursorPos()) & (v1 != lcd.cursorPos()+1)) {
-    //Serial.println("cell");
-    //Serial.println(lcd.cursorPos());
-    //Serial.println("line");
-    //Serial.println(lcd.cursorPos() % 4);
-    //Serial.println("columm");
-    //Serial.println(lcd.cursorPos() - (40 * (lcd.cursorPos() % 4)));
-    v1 = lcd.cursorPos();
-    if (x != v2 | y != v3){
-      lcd.setCursor(v1 + v2-1,v3);
-      v2 = 0;
-      v3 = 0;
+  if (x > 10 | y > 10 | x < -10 | y < -10){
+    while (abs(x) > v2 | abs(y) > v3) {
+      delay(400);
+      //break;
+      xf = (analogRead(JoyStick_X)) - cx;
+      yf = (analogRead(JoyStick_Y)) - cy; 
+      x = xf - xi;
+      y = yf - yi;
+      if (abs(x) > v2) {
+        v2 = x;
+        if (abs(y) > v3) v3 = y;
+        else break;
+      }
+      else break;
+      if (abs(y) > v3) {
+        v2 = x;
+        if (abs(x) > v2) v2 = 2;
+        else break;
+      }
+      else break;
+      Serial.println(x+y);
+      xi = xf;
+      yi = yf;
+      //Serial.print(x ,DEC);
+      //Serial.print(",");
+      //Serial.println(y ,DEC);
+      //Serial.print(",");
+      //Serial.println(z ,DEC);
+      cx = analogRead((JoyStick_X));
+      cy = analogRead((JoyStick_Y));
     }
-    else {
-      if (abs(x) > v2) v2 = x;
-      if (abs(y) > v3) v3 = y;
+    z = digitalRead(JoyStick_Z);
+    if (abs(x) > abs(v2)) v2 = x;
+    if (abs(y) > abs(v3)) v3 = y;
+    if (z == 0) {
+      int dir = JoyStickDirection();
+      Serial.println(dir);
+      if (dir == 1) lcd.goto_Cell(lcd.cursorPos() + 1);
+      else if (dir == 3) lcd.goto_Cell(lcd.cursorPos() - 1);
+      else if (dir == 2) lcd.goto_Cell(lcd.cursorPos() + 40);
+      else if (dir == 4) lcd.goto_Cell(lcd.cursorPos() - 40);
+      //Serial.print(lcd.cursorPos());
     }
-    Serial.println(JoyStickDirection());
-    delay(1000);
   }
+  delay(100);
 }
 
 void charSelect(){
@@ -91,16 +88,16 @@ void charSelect(){
 }
 
 int JoyStickDirection(){
-  if (abs(x) > abs(y)){
-    if (abs(x) > 0) {
+  if (abs(v2) > abs(v3)){
+    if (abs(v2) > 0) {
       return 1;
-    } else if (abs(x) < 0) {
+    } else if (abs(v2) < 0) {
       return 3;
     }
-  } else if (abs(y) > abs(x)) {
-    if (abs(y) > 0) {
+  } else if (abs(v3) > abs(v2)) {
+    if (abs(v3) > 0) {
       return 2;
-    } else if (abs(y) < 0) {
+    } else if (abs(v3) < 0) {
       return 4;
     }
   }

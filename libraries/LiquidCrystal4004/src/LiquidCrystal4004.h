@@ -67,6 +67,8 @@ public:
   void setCursor(uint8_t, uint8_t); 
   virtual size_t write(uint8_t);
   void command(uint8_t);
+  void goto_Cell(uint8_t);
+  void set_Cell(uint8_t);
   uint8_t cursorPos();
 
   using Print::write;
