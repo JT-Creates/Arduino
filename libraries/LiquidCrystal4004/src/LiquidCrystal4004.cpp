@@ -151,6 +151,9 @@ void LiquidCrystal4004::setCursor(uint8_t col, uint8_t row) {
 uint8_t LiquidCrystal4004::cursorPos() {
   return cur_col;
 }
+void LiquidCrystalDual4004::setCell() {
+  
+}
 
 // Turn the display on/off (quickly)
 void LiquidCrystal4004::noDisplay() {
