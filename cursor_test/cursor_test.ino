@@ -63,12 +63,12 @@ void loop() {
   }
   v1 += v2;
   if ((v1 != lcd.cursorPos()-1) & (v1 != lcd.cursorPos()) & (v1 != lcd.cursorPos()+1)) {
-    Serial.println("cell");
-    Serial.println(lcd.cursorPos());
-    Serial.println("line");
-    Serial.println(lcd.cursorPos() % 4);
-    Serial.println("columm");
-    Serial.println(lcd.cursorPos() - (40 * (lcd.cursorPos() % 4)));
+    //Serial.println("cell");
+    //Serial.println(lcd.cursorPos());
+    //Serial.println("line");
+    //Serial.println(lcd.cursorPos() % 4);
+    //Serial.println("columm");
+    //Serial.println(lcd.cursorPos() - (40 * (lcd.cursorPos() % 4)));
     v1 = lcd.cursorPos();
     if (x != v2 | y != v3){
       lcd.setCursor(v1 + v2-1,v3);
@@ -79,6 +79,30 @@ void loop() {
       if (abs(x) > v2) v2 = x;
       if (abs(y) > v3) v3 = y;
     }
+    Serial.println(JoyStickDirection());
     delay(1000);
   }
+}
+
+void charSelect(){
+  do {
+    return 1;
+  } while (1);
+}
+
+int JoyStickDirection(){
+  if (abs(x) > abs(y)){
+    if (abs(x) > 0) {
+      return 1;
+    } else if (abs(x) < 0) {
+      return 3;
+    }
+  } else if (abs(y) > abs(x)) {
+    if (abs(y) > 0) {
+      return 2;
+    } else if (abs(y) < 0) {
+      return 4;
+    }
+  }
+  return 0;
 }
