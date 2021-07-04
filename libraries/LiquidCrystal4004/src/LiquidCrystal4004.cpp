@@ -160,7 +160,8 @@ void LiquidCrystal4004::goto_Cell(uint8_t cell) {
 void LiquidCrystal4004::set_Cell(uint8_t value) {
   
 }
-
+void LiquidCrystal4004::state_check() {
+  }
 // Turn the display on/off (quickly)
 void LiquidCrystal4004::noDisplay() {
   command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_DISPLAYON);
