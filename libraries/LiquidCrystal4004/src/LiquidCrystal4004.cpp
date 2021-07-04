@@ -77,7 +77,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
   if ((dotsize != LCD_5x8DOTS) & (lines == 1)) _displayfunction |= LCD_5x10DOTS;
 
   // I found the Seyko is fine with 1ms.
-  delayMicroseconds(1000);
+  delayMicroseconds(100);
 
   // Now we pull both RS and R/W low to begin commands
   digitalWrite(_rs_pin, LOW);
@@ -90,7 +90,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
     // we start in 8bit mode, try to set 4 bit mode three times.
     for (int i = 0; i < 3; i++) {
       for (col_override = 2; 0 < col_override; col_override--) writeBits(0x03);
-      delayMicroseconds(4103); // wait min 4.1ms
+      delayMicroseconds(50); // wait min 4.1ms
     }
 
     // finally, set to 4-bit interface
@@ -99,7 +99,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
     // Send function set command sequence three times.
     for (int i = 0; i < 3; i++) {
       command(LCD_FUNCTIONSET | _displayfunction);
-      delayMicroseconds(4103);  // wait more than 4.1ms
+      delayMicroseconds(50);  // wait more than 4.1ms
     }
   }
 
@@ -130,13 +130,13 @@ void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
 /********** high level commands, for the user! */
 void LiquidCrystal4004::clear() {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-  delayMicroseconds(2000);  // this command takes a long time!
+  delayMicroseconds(1380);  // this command takes a long time!
   cur_col = 0;
 }
 
 void LiquidCrystal4004::home() {
   command(LCD_RETURNHOME);  // set cursor position to zero
-  delayMicroseconds(2000);  // this command takes a long time!
+  delayMicroseconds(1380);  // this command takes a long time!
   cur_col = 0;
 }
 
@@ -245,9 +245,7 @@ void LiquidCrystal4004::pulseEnable() {
   if (cur_col < 0) cur_col = max_cells;
   _e_pin = ((cur_col <= switch_point & col_override == 0) | col_override == 1) ? _enable_pin1 : _enable_pin2;
   digitalWrite(_e_pin, LOW);
-  delayMicroseconds(3);
   digitalWrite(_e_pin, HIGH);
-  delayMicroseconds(3);
   digitalWrite(_e_pin, LOW);
 }
 
