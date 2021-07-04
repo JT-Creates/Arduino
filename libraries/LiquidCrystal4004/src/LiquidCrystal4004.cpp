@@ -153,6 +153,8 @@ uint8_t LiquidCrystal4004::cursorPos() {
 }
 void LiquidCrystal4004::goto_Cell(uint8_t cell) {
   cur_col = cell;
+  if (cur_col > max_cells) cur_col -= max_cells;
+  if (cur_col < 0) cur_col += max_cells;
   command(LCD_SETDDRAMADDR | cur_col);
 }
 void LiquidCrystal4004::set_Cell(uint8_t value) {
@@ -233,7 +235,6 @@ inline size_t LiquidCrystal4004::write(uint8_t value) {
 void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   if (col_override == 0) cur_col++;
   digitalWrite(_rs_pin, mode);
-
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
   if (!(_displayfunction & LCD_8BITMODE)) writeBits(value>>4);
