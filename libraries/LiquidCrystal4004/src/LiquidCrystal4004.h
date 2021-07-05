@@ -56,6 +56,7 @@ public:
   void blink();
   void noCursor();
   void cursor();
+  void state_check();
   void scrollDisplayLeft();
   void scrollDisplayRight();
   void leftToRight();
@@ -65,8 +66,9 @@ public:
   void setRowOffsets(int row1, int row2, int row3, int row4);
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
+  void cursor_Control(bool, int value = 0); 
   virtual size_t write(uint8_t);
-  void command(uint8_t);
+  void command(uint8_t, int mode = -1);
   void goto_Cell(uint8_t);
   void set_Cell(uint8_t);
   uint8_t cursorPos();

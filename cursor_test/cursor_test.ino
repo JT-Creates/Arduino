@@ -37,22 +37,20 @@ void loop() {
     if (dir == 1) lcd.goto_Cell(lcd.cursorPos() + 1);
     else if (dir == 3) lcd.goto_Cell(lcd.cursorPos() - 1);
     else if (dir == 2) {
-      for(int i = 0; i < 40; i++){
-        lcd.goto_Cell(lcd.cursorPos() + 1);
-      }
+      lcd.goto_Cell(lcd.cursorPos() + 40);
+      delay(800);
     }
     else if (dir == 4) {
-      for(int i = 0; i < 40; i++){
-        lcd.goto_Cell(lcd.cursorPos() - 1);
-      }
+      lcd.goto_Cell(lcd.cursorPos() - 40);
+      delay(800);
     }
-    delay(100);
+    delay(200);
     //delay(100+((abs(dx+1)/abs(dy+1))+1));
   } else {
     cx = analogRead(JoyStick_X);
     cy = analogRead(JoyStick_Y);
   }
-  delay(100);
+  delay(10);
 }
 
 void charSelect(){

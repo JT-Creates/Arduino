@@ -24,7 +24,7 @@
 // we can save 1 pin by not using RW. Indicated by passing 255 instead of pin#
 
 bool cursor_state = false, blink_state = false;
-int cur_col = 0, col_override = 0, control_chips, switch_point, max_cells;
+int cur_col = 0, col_override = 0, control_chips = 2, switch_point, max_cells;
 
 int digitalReadOutputPin(uint8_t pin) {
   uint8_t bit = digitalPinToBitMask(pin);
@@ -77,7 +77,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
   if ((dotsize != LCD_5x8DOTS) & (lines == 1)) _displayfunction |= LCD_5x10DOTS;
 
   // I found the Seyko is fine with 1ms.
-  delayMicroseconds(100);
+  delayMicroseconds(1401);
 
   // Now we pull both RS and R/W low to begin commands
   digitalWrite(_rs_pin, LOW);
@@ -90,7 +90,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
     // we start in 8bit mode, try to set 4 bit mode three times.
     for (int i = 0; i < 3; i++) {
       for (col_override = 2; 0 < col_override; col_override--) writeBits(0x03);
-      delayMicroseconds(50); // wait min 4.1ms
+      delayMicroseconds(1401); // wait min 4.1ms
     }
 
     // finally, set to 4-bit interface
@@ -99,7 +99,7 @@ void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips,
     // Send function set command sequence three times.
     for (int i = 0; i < 3; i++) {
       command(LCD_FUNCTIONSET | _displayfunction);
-      delayMicroseconds(50);  // wait more than 4.1ms
+      delayMicroseconds(1401);  // wait more than 4.1ms
     }
   }
 
@@ -130,13 +130,13 @@ void LiquidCrystal4004::setRowOffsets(int row0, int row1, int row2, int row3) {
 /********** high level commands, for the user! */
 void LiquidCrystal4004::clear() {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-  delayMicroseconds(1380);  // this command takes a long time!
+  delayMicroseconds(1401);  // this command takes a long time!
   cur_col = 0;
 }
 
 void LiquidCrystal4004::home() {
   command(LCD_RETURNHOME);  // set cursor position to zero
-  delayMicroseconds(1380);  // this command takes a long time!
+  delayMicroseconds(1401);  // this command takes a long time!
   cur_col = 0;
 }
 
@@ -153,15 +153,32 @@ uint8_t LiquidCrystal4004::cursorPos() {
 }
 void LiquidCrystal4004::goto_Cell(uint8_t cell) {
   cur_col = cell;
-  if (cur_col > max_cells) cur_col -= max_cells;
-  if (cur_col < 0) cur_col += max_cells;
   command(LCD_SETDDRAMADDR | cur_col);
 }
 void LiquidCrystal4004::set_Cell(uint8_t value) {
   
 }
-void LiquidCrystal4004::state_check() {
+void LiquidCrystal4004::state_check(void) {
+  if ((cur_col <= switch_point & col_override == 0) | col_override == 1) {
+    if (cursor_state | blink_state) {
+      cursor_Control(true, 1);
+      cursor_Control(false, 2);
+    }
+  } else {
+    if (cursor_state | blink_state) {
+      cursor_Control(false, 1);
+      cursor_Control(true, 2);
+    }
   }
+}
+
+void LiquidCrystal4004::cursor_Control(bool mode, int value) {
+  if (cursor_state & mode) command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_CURSORON, value);
+  else command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_CURSORON, value);
+  if (blink_state & mode) command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_BLINKON, value);
+  else command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_BLINKON, value);
+}
+
 // Turn the display on/off (quickly)
 void LiquidCrystal4004::noDisplay() {
   command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_DISPLAYON);
@@ -172,18 +189,18 @@ void LiquidCrystal4004::display() {
 
 // Turns the underline cursor on/off
 void LiquidCrystal4004::noCursor() {
-  command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_CURSORON);
+  cursor_state = false;
 }
 void LiquidCrystal4004::cursor() {
-  command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_CURSORON);
+  cursor_state = true;
 }
 
 // Turn on and off the blinking cursor
 void LiquidCrystal4004::noBlink() {
-  command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_BLINKON);
+  blink_state = false;
 }
 void LiquidCrystal4004::blink() {
-  command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_BLINKON);
+  blink_state = true;
 }
 
 // These commands scroll the display without changing the RAM
@@ -223,8 +240,14 @@ void LiquidCrystal4004::createChar(uint8_t location, uint8_t charmap[]) {
 
 /*********** mid level commands, for sending data/cmds */
 
-inline void LiquidCrystal4004::command(uint8_t value) {
-  for (col_override = 2; 0 < col_override; col_override--) send(value, LOW);
+inline void LiquidCrystal4004::command(uint8_t value, int mode) {
+  //if (mode == -1) {
+    for (col_override = 2; 0 < col_override; col_override--) send(value, LOW);
+  //}
+  //else {
+  //  col_override = mode;
+  //  send(value, LOW);
+  //}
 }
 inline size_t LiquidCrystal4004::write(uint8_t value) {
   send(value, HIGH);
@@ -235,6 +258,9 @@ inline size_t LiquidCrystal4004::write(uint8_t value) {
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
   if (col_override == 0) cur_col++;
+  if (cur_col > max_cells) cur_col -= max_cells - 1;
+  if (cur_col < 0) cur_col += max_cells + 1;
+  if (mode == HIGH) state_check();
   digitalWrite(_rs_pin, mode);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
@@ -243,8 +269,6 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 }
 
 void LiquidCrystal4004::pulseEnable() {
-  if (cur_col > max_cells) cur_col = 0;
-  if (cur_col < 0) cur_col = max_cells;
   _e_pin = ((cur_col <= switch_point & col_override == 0) | col_override == 1) ? _enable_pin1 : _enable_pin2;
   digitalWrite(_e_pin, LOW);
   digitalWrite(_e_pin, HIGH);
