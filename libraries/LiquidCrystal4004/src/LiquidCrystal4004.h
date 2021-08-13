@@ -47,7 +47,7 @@ public:
   LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,uint8_t d4 = 0, uint8_t d5 = 0, uint8_t d6 = 0, uint8_t d7 = 0);
   LiquidCrystal4004(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,uint8_t d4 = 0, uint8_t d5 = 0, uint8_t d6 = 0, uint8_t d7 = 0);
   void init(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);  
-  void begin(uint8_t cols, uint8_t rows, uint8_t controlChips = 2, uint8_t charsize = LCD_5x8DOTS);
+  void begin(uint8_t cols, uint8_t rows, uint8_t _e_pins = 2, uint8_t charsize = LCD_5x8DOTS);
   void clear();
   void home();
   void noDisplay();
@@ -68,10 +68,11 @@ public:
   void setCursor(uint8_t, uint8_t); 
   void cursor_Control(bool, int value = 0); 
   virtual size_t write(uint8_t);
-  void command(uint8_t, int mode = -1);
+  void command(uint8_t, int mode = 0);
   void goto_Cell(uint8_t);
   void set_Cell(uint8_t);
   uint8_t cursorPos();
+  int enable_pin();
 
   using Print::write;
 private:
@@ -81,8 +82,6 @@ private:
   uint8_t _e_pin;
   uint8_t _rs_pin; // LOW: command.  HIGH: character.
   uint8_t _rw_pin; // LOW: write to LCD.  HIGH: read from LCD.
-  uint8_t _enable_pin1; // activated by a HIGH pulse.
-  uint8_t _enable_pin2; // activated by a HIGH pulse.
   uint8_t _data_pins[8];
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
@@ -92,5 +91,6 @@ private:
   uint8_t _cols;
   uint8_t _lines;
   uint8_t _row_offsets[4];
+  uint8_t _enable_pins[]; // activated by a HIGH pulse.
 };
 #endif

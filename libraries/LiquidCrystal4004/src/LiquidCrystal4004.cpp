@@ -24,7 +24,7 @@
 // we can save 1 pin by not using RW. Indicated by passing 255 instead of pin#
 
 bool cursor_state = false, blink_state = false;
-int cur_col = 0, col_override = 0, control_chips = 2, switch_point, max_cells;
+int cur_col = 0, col_override = 0, e_pins = 2, switch_point, max_cells;
 
 int digitalReadOutputPin(uint8_t pin) {
   uint8_t bit = digitalPinToBitMask(pin);
@@ -40,11 +40,11 @@ LiquidCrystal4004::LiquidCrystal4004(uint8_t rs, uint8_t enable1, uint8_t enable
   init(rs, 255, enable1, enable2, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-void LiquidCrystal4004::init(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2,  uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
+void LiquidCrystal4004::init(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t enable2, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7) {
   _rs_pin = rs;
   _rw_pin = rw;
-  _enable_pin1 = enable1;
-  _enable_pin2 = enable2;
+  _enable_pins[0] = enable1;
+  _enable_pins[1] = enable2;
   _data_pins[0] = d0;
   _data_pins[1] = d1;
   _data_pins[2] = d2;
@@ -56,18 +56,18 @@ void LiquidCrystal4004::init(uint8_t rs, uint8_t rw, uint8_t enable1, uint8_t en
 
   pinMode(_rs_pin, OUTPUT);
   if (_rw_pin != 255) pinMode(_rw_pin, OUTPUT);
-  pinMode(_enable_pin1, OUTPUT);
-  pinMode(_enable_pin2, OUTPUT);
+  pinMode(_enable_pins[0], OUTPUT);
+  pinMode(_enable_pins[1], OUTPUT);
   _displayfunction = ((d4 == 0 & d5 == 0 & d6 == 0 & d7 == 0) ? LCD_4BITMODE : LCD_8BITMODE) | LCD_1LINE | LCD_5x8DOTS;
 }
 
-void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t controlChips, uint8_t dotsize) {
+void LiquidCrystal4004::begin(uint8_t cols, uint8_t lines, uint8_t _e_pins, uint8_t dotsize) {
   cur_col = 0;
   _cols = cols;
   _lines = lines;
-  control_chips = controlChips;
+  e_pins = _e_pins;
   max_cells = _cols * _lines;
-  switch_point = max_cells / control_chips;
+  switch_point = max_cells / e_pins;
   if (lines > 1) _displayfunction |= LCD_2LINE;
   _numlines = lines;
 
@@ -153,30 +153,26 @@ uint8_t LiquidCrystal4004::cursorPos() {
 }
 void LiquidCrystal4004::goto_Cell(uint8_t cell) {
   cur_col = cell;
-  command(LCD_SETDDRAMADDR | cur_col);
+  command(LCD_SETDDRAMADDR | (cur_col+(enable_pin()*switch_point)), enable_pin()+1);
 }
 void LiquidCrystal4004::set_Cell(uint8_t value) {
   
 }
+int LiquidCrystal4004::enable_pin(void) {
+  return ((cur_col <= switch_point & col_override == 0) | col_override == 1) ? 0 : 1;
+}
 void LiquidCrystal4004::state_check(void) {
-  if ((cur_col <= switch_point & col_override == 0) | col_override == 1) {
-    if (cursor_state | blink_state) {
-      cursor_Control(true, 1);
-      cursor_Control(false, 2);
-    }
-  } else {
-    if (cursor_state | blink_state) {
-      cursor_Control(false, 1);
-      cursor_Control(true, 2);
-    }
+  for(int e = 1; e <= e_pins; e++) {
+    if (e == enable_pin()) cursor_Control(true, e);
+    else cursor_Control(false, e);
   }
 }
 
 void LiquidCrystal4004::cursor_Control(bool mode, int value) {
   if (cursor_state & mode) command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_CURSORON, value);
-  else command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_CURSORON, value);
+  else if (cursor_state) command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_CURSORON, value);
   if (blink_state & mode) command(LCD_DISPLAYCONTROL | _displaycontrol & ~LCD_BLINKON, value);
-  else command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_BLINKON, value);
+  else if (blink_state) command(LCD_DISPLAYCONTROL | _displaycontrol | LCD_BLINKON, value);
 }
 
 // Turn the display on/off (quickly)
@@ -241,13 +237,14 @@ void LiquidCrystal4004::createChar(uint8_t location, uint8_t charmap[]) {
 /*********** mid level commands, for sending data/cmds */
 
 inline void LiquidCrystal4004::command(uint8_t value, int mode) {
-  //if (mode == -1) {
+  if (mode == 0) {
     for (col_override = 2; 0 < col_override; col_override--) send(value, LOW);
-  //}
-  //else {
-  //  col_override = mode;
-  //  send(value, LOW);
-  //}
+  }
+  else {
+    col_override = mode;
+    send(value, LOW);
+    col_override = 0;
+  }
 }
 inline size_t LiquidCrystal4004::write(uint8_t value) {
   send(value, HIGH);
@@ -257,10 +254,12 @@ inline size_t LiquidCrystal4004::write(uint8_t value) {
 
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
-  if (col_override == 0) cur_col++;
+  if (col_override == 0) {
+    cur_col++;
+    state_check();
+  }
   if (cur_col > max_cells) cur_col -= max_cells - 1;
   if (cur_col < 0) cur_col += max_cells + 1;
-  if (mode == HIGH) state_check();
   digitalWrite(_rs_pin, mode);
   // if there is a RW pin indicated, set it low to Write
   if (_rw_pin != 255) digitalWrite(_rw_pin, LOW);
@@ -269,7 +268,7 @@ void LiquidCrystal4004::send(uint8_t value, uint8_t mode) {
 }
 
 void LiquidCrystal4004::pulseEnable() {
-  _e_pin = ((cur_col <= switch_point & col_override == 0) | col_override == 1) ? _enable_pin1 : _enable_pin2;
+  _e_pin = _enable_pins[enable_pin()];
   digitalWrite(_e_pin, LOW);
   digitalWrite(_e_pin, HIGH);
   digitalWrite(_e_pin, LOW);
